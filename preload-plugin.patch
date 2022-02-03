@@ -1,0 +1,24 @@
+From d2f1cc616479f86cd3b2d737029d66d6ed17e77a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Am=C3=A9lia=20Liao?= <me@amelia.how>
+Date: Thu, 3 Feb 2022 13:11:45 -0300
+Subject: [PATCH] add swhid plugin to preload list
+
+---
+ plugin/loader/preload_list | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/plugin/loader/preload_list b/plugin/loader/preload_list
+index 54b8dee6fc..1540028061 100644
+--- a/plugin/loader/preload_list
++++ b/plugin/loader/preload_list
+@@ -9,4 +9,5 @@ iplddagjose github.com/ipfs/go-ipfs/plugin/plugins/dagjose *
+ badgerds github.com/ipfs/go-ipfs/plugin/plugins/badgerds *
+ flatfs github.com/ipfs/go-ipfs/plugin/plugins/flatfs *
+ levelds github.com/ipfs/go-ipfs/plugin/plugins/levelds *
+-peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
+\ No newline at end of file
++peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
++swhid github.com/obsidiansystems/go-ipfs-swh-plugin *
+-- 
+2.34.1
+
