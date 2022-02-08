@@ -44,6 +44,11 @@ let
   # The version that ^^^ reports itself as
   ipfs-version = "v0.13.0";
 
+  ipfs-replacements = ''
+  # Update our version of go-multicodec
+  go mod edit -replace=github.com/multiformats/go-multicodec@v0.3.0=github.com/multiformats/go-multicodec@v0.4.0
+  '';
+
   # Use the Nixpkgs Go build support to generate a fixed-output
   # derivation of the *dependencies* of the above IPFS package.
   ipfs-vendor = (pkgs.buildGoModule {
@@ -51,7 +56,10 @@ let
     version = ipfs-version;
     src = ipfs-source;
 
-    vendorSha256 = "1byy8wvp2w7jf5a8h186mlbfbkbrry1zcb6vg3yqwjv4pkr5r6ng";
+    vendorSha256 = "05f3f4ibsmzvlqmzv7g4xa867fsl38r03gzmidvaxq29grsjjhj2";
+    overrideModAttrs = old: {
+      postConfigure = ipfs-replacements;
+    };
   }).go-modules;
   # ^^^^^^^^^^^^ This means that we don't build IPFS twice.
 
@@ -89,6 +97,8 @@ pkgs.buildGoModule rec {
 
   # And copy our generated dependencies module to the vendor folder.
   cp -r --reflink=auto ${go-modules} vendor
+
+  ${ipfs-replacements}
   '';
 
   postInstall = pkgs.ipfs.postInstall;

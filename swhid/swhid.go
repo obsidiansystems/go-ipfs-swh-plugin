@@ -2,8 +2,10 @@ package swhid
 
 import (
 	"fmt"
+	"io"
 
 	plugin "github.com/ipfs/go-ipfs/plugin"
+	"github.com/ipld/go-ipld-prime/datamodel"
 	"github.com/ipld/go-ipld-prime/multicodec"
 )
 
@@ -29,5 +31,8 @@ func (*SwhidPlugin) Init(env *plugin.Environment) error {
 
 func (*SwhidPlugin) Register(reg multicodec.Registry) error {
 	fmt.Printf("SWHID plugin loaded!\n")
+	reg.RegisterEncoder(0x01f0, func(a datamodel.Node, b io.Writer) error {
+		return nil
+	})
 	return nil
 }
