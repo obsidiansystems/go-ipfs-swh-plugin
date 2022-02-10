@@ -92,7 +92,7 @@ pkgs.buildGoModule rec {
   #           preload list.
 
   passthru = {
-    inherit go-ipfs-swh-plugin go-modules;
+    inherit go-ipfs-swh-plugin go-modules ipfs-vendor;
   };
 
   postConfigure = ''
