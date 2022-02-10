@@ -32,7 +32,10 @@ func (*SwhidPlugin) Init(env *plugin.Environment) error {
 func (*SwhidPlugin) Register(reg multicodec.Registry) error {
 	fmt.Printf("SWHID plugin loaded!\n")
 	reg.RegisterEncoder(0x01f0, func(a datamodel.Node, b io.Writer) error {
-		return nil
+		return fmt.Errorf("test error (encode)")
+	})
+	reg.RegisterDecoder(0x01f0, func(a datamodel.NodeAssembler, b io.Reader) error {
+		return fmt.Errorf("test error (decode)")
 	})
 	return nil
 }
