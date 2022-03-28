@@ -13,16 +13,16 @@
 # generated vendor directory. Then, we can put the plugin into the IPFS
 # preload list. That way, the plugin is baked into the binary, and
 # guaranteed to build + run consistently.
-{ pkgs ? 
+{ pkgs ?
   import (builtins.fetchTarball {
     name = "nixpkgs-release-21.11";
     url = "https://github.com/NixOS/nixpkgs/archive/release-21.11.tar.gz";
-    sha256 = "1qgvkmjf69gqa1ddisgxl0g068q021f3ya7q9y4407pdrqcv61yq";
+    sha256 = sha256:0i388lx94m0fvj6010qsdnsrhcysij44xcgyz6mg38pw0hdbq8zr;
   }) {}
 }:
 let
   # Filter the plugin sources to just the skeleton + Go files
-  filter = with pkgs.lib; path: type: 
+  filter = with pkgs.lib; path: type:
     type == "directory" || hasSuffix ".go" (baseNameOf path);
 
   # This derivation copies the plugin *sources* to the same directory
@@ -76,7 +76,7 @@ let
 in
 pkgs.buildGoModule rec {
   name = "ipfs+swh";
-  version = ipfs-version; 
+  version = ipfs-version;
   src = ipfs-source;
 
   buildInputs = [ go-modules ];
