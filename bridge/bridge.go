@@ -33,7 +33,7 @@ func (*BridgePlugin) Init(env *plugin.Environment) error {
 }
 
 func (*BridgePlugin) DatastoreTypeName() string {
-	return "swhds"
+	return "swhbridge"
 }
 
 type bridgeDatastoreConfig struct {
@@ -81,14 +81,44 @@ func keyToGit(key ds.Key) (string, error) {
 	return str[1:], nil
 }
 
-func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
-	fmt.Printf("get: key=%s\n", key)
-
+func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
 	val, found := b.backing[key]
 	if found {
+		fmt.Printf("swh bridge: key %s is cached\n", key)
 		return val, nil
 	}
 
+	/* Attempt 1: Fetch the given hash as a blob. We hit the "content" SWH
+	 * API endpoint, and use that as the contents. */
+	fmt.Printf("swh bridge: fetching hash: %s\n", hash)
+	url := fmt.Sprintf("https://archive.softwareheritage.org/api/1/content/sha1_git:%s/raw/", hash)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("swh bridge: hash fetched: %s\n", hash)
+
+	/* We need to add the git blob header (so the string "blob", the byte
+	 * length as decimal digits, and a zero byte) to the returned contents,
+	 * otherwise other IPFS nodes have no reason to believe that the data
+	 * we just gave them is what we said we gave them. */
+	head := fmt.Sprintf("blob %d\x00", len(buf))
+	buffer := make([]byte, len(head))
+	copy(buffer, head)
+	buffer = append(buffer, buf...)
+
+	b.backing[key] = buffer
+	return buffer, nil
+}
+
+func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
 
@@ -96,24 +126,10 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 	// (content, snapshot, tree, commit) without hitting the API 4 times
 	// per Get. I don't think we have access to the codec in this method..
 	if err == nil {
-		fmt.Printf("getting hash: %s\n", hash)
-		url := fmt.Sprintf("https://archive.softwareheritage.org/api/1/content/sha1_git:%s/raw/", hash)
-
-		resp, err := http.Get(url)
-		if err != nil {
-			return nil, err
-		}
-
-		buf, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		b.backing[key] = buf // use the put storage for cheap caching
-		return buf, nil
+		return b.fetchHash(hash, key)
 	}
 
-	return nil, fmt.Errorf("swhds: dunno how to get %s", key)
+	return nil, ds.ErrNotFound
 }
 
 func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
@@ -123,7 +139,7 @@ func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
 }
 
 func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
-	return 0, nil
+	return 0, ds.ErrNotFound
 }
 
 func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
