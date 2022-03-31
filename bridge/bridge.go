@@ -8,6 +8,7 @@ import (
 
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
+	config "github.com/ipfs/go-ipfs-config"
 	plugin "github.com/ipfs/go-ipfs/plugin"
 	"github.com/ipfs/go-ipfs/repo"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
@@ -28,7 +29,41 @@ func (*BridgePlugin) Version() string {
 	return "0.1.0"
 }
 
+func bridgeSpec() map[string]interface{} {
+	return map[string]interface{}{
+		"type": "mount",
+		"mounts": []interface{}{
+			map[string]interface{}{
+				"mountpoint": "/blocks",
+				"type":       "measure",
+				"prefix":     "swhbridge.datastore",
+				"child": map[string]interface{}{
+					"type": "swhbridge",
+				},
+			},
+			map[string]interface{}{
+				"mountpoint": "/",
+				"type":       "measure",
+				"prefix":     "leveldb.datastore",
+				"child": map[string]interface{}{
+					"type":        "levelds",
+					"path":        "datastore",
+					"compression": "none",
+				},
+			},
+		},
+	}
+}
+
 func (*BridgePlugin) Init(env *plugin.Environment) error {
+	config.Profiles["swhbridge"] = config.Profile{
+		Description: "Configures the node to act as a bridge to the Software Heritage archive.",
+		InitOnly:    true,
+		Transform: func(c *config.Config) error {
+			c.Datastore.Spec = bridgeSpec()
+			return nil
+		},
+	}
 	return nil
 }
 
@@ -49,7 +84,6 @@ func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 // We need a map to store puts/has-es; IPFS will always try to store the
 // "empty directory" CID.
 type BridgeDs struct {
-	backing map[ds.Key][]byte
 }
 
 var _ repo.Datastore = (*BridgeDs)(nil)
@@ -61,10 +95,13 @@ func (c BridgeDs) Close() error {
 // Parse a datastore key as a SHA1 multihash, and encode it in hex
 // (codec 'f'), dropping the signifier byte.
 func keyToGit(key ds.Key) (string, error) {
+	// Parse the key as base32-encoded data
 	data, err := base32.RawStdEncoding.DecodeString(key.String()[1:])
 	if err != nil {
 		return "", err
 	}
+
+	// Decode the data as a multihash
 	myh, err := mh.Decode(data)
 	if err != nil {
 		return "", err
@@ -74,19 +111,19 @@ func keyToGit(key ds.Key) (string, error) {
 		return "", fmt.Errorf("data was a multihash encoded with %d, but expected %d (SHA1)", myh.Code, mh.SHA1)
 	}
 
+	// Re-encode it in hex
 	str, err := mb.Encode('f', myh.Digest)
 	if err != nil {
 		return "", err
 	}
+
 	return str[1:], nil
 }
 
 func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
-	val, found := b.backing[key]
-	if found {
-		fmt.Printf("swh bridge: key %s is cached\n", key)
-		return val, nil
-	}
+	// TODO: Hit the "/api/1/known" endpoint with a POST request with the
+	// set of possible SWHIDs for the given hash, then fetch only the
+	// SWHID in the object which was indicated to exist.
 
 	/* Attempt 1: Fetch the given hash as a blob. We hit the "content" SWH
 	 * API endpoint, and use that as the contents. */
@@ -96,6 +133,10 @@ func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, ds.ErrNotFound
 	}
 
 	buf, err := ioutil.ReadAll(resp.Body)
@@ -114,7 +155,6 @@ func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
 	copy(buffer, head)
 	buffer = append(buffer, buf...)
 
-	b.backing[key] = buffer
 	return buffer, nil
 }
 
@@ -129,13 +169,11 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 		return b.fetchHash(hash, key)
 	}
 
-	return nil, ds.ErrNotFound
+	return nil, nil
 }
 
 func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
-	fmt.Printf("has: key=%s\n", key)
-	_, found := b.backing[key]
-	return found, nil
+	return false, nil
 }
 
 func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
@@ -148,7 +186,6 @@ func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
 }
 
 func (b BridgeDs) Put(ctx ctx.Context, key ds.Key, value []byte) error {
-	fmt.Printf("put: key=%s, value=%s\n", key, value)
 	return nil
 }
 
@@ -165,7 +202,7 @@ func (b BridgeDs) Batch(ctx ctx.Context) (ds.Batch, error) {
 }
 
 func (c *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
-	return BridgeDs{make(map[ds.Key][]byte)}, nil
+	return BridgeDs{}, nil
 }
 
 func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
