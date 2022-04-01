@@ -81,8 +81,6 @@ func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 	return nil
 }
 
-// We need a map to store puts/has-es; IPFS will always try to store the
-// "empty directory" CID.
 type BridgeDs struct {
 }
 
