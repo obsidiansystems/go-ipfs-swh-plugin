@@ -16,9 +16,12 @@
 { pkgs ? import ./dep/nixpkgs {}
 }:
 let
+  inherit (pkgs) lib;
+
   # Filter the plugin sources to just the skeleton + Go files
-  filter = with pkgs.lib; path: type:
-    type == "directory" || hasSuffix ".go" (baseNameOf path);
+  filter = with lib; path: type:
+    (type == "directory" && !(elem (baseNameOf path) [ ".git" "dep" ]))
+    || hasSuffix ".go" (baseNameOf path);
 
   # This derivation copies the plugin *sources* to the same directory
   # where Go would put our package if it were a true dependency of ipfs.
