@@ -1,9 +1,5 @@
 let
-  pkgs = import (builtins.fetchTarball {
-    name = "nixpkgs-release-21.11";
-    url = "https://github.com/NixOS/nixpkgs/archive/release-21.11.tar.gz";
-    sha256 = sha256:0i388lx94m0fvj6010qsdnsrhcysij44xcgyz6mg38pw0hdbq8zr;
-  }) {};
+  pkgs = import ./dep/nixpkgs {};
 
   ipfs = import ./. { inherit pkgs; };
 

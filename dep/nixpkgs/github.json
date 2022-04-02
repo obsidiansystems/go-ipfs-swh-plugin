@@ -1,0 +1,8 @@
+{
+  "owner": "nixos",
+  "repo": "nixpkgs",
+  "branch": "nixos-21.11",
+  "private": false,
+  "rev": "efea022d6fe0da84aa6613d4ddeafb80de713457",
+  "sha256": "0f7v00i03iglxf18nk1dh7844zbpp37hl4s53v8vqgzcdgy2lw54"
+}
