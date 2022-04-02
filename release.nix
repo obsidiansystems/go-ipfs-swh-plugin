@@ -31,14 +31,16 @@ in
     testScript = ''
       machine.succeed('ipfs -L --offline init')
 
-      # Test storing some data with our codec (Fails with a specific
-      # error because encode is not implemented)
-      output = machine.fail(
-        'ipfs -L --offline dag put --store-codec swhid-1-snp < ${test_data_json} 2>&1'
-      ).strip()
+      # Skipping until we work on snapshot decoding more
+      #
+      # # Test storing some data with our codec (Fails with a specific
+      # # error because encode is not implemented)
+      # output = machine.fail(
+      #   'ipfs -L --offline dag put --store-codec swhid-1-snp < ${test_data_json} 2>&1'
+      # ).strip()
 
-      if "test error (encode)" not in output:
-        raise ValueError("Test encoding error did not fire (plugin not loaded?)")
+      # if "test error (encode)" not in output:
+      #   raise ValueError("Test encoding error did not fire (plugin not loaded?)")
 
       # SWH Archive servers are inaccessible from this machine
       machine.fail(
