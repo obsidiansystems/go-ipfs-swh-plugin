@@ -4,7 +4,7 @@ IPFS plugin for bridging requests to the Software Heritage API,
 implemented as a datastore.
 
 Using the `makecid.py` script included in the repository, or by pasting
-the magic `f01551114` bytes in front of an identifier hash, you can
+the magic `f01781114` bytes in front of an identifier hash, you can
 convert a SWHID to a CID which the bridge can handle.
 
 ```
@@ -13,7 +13,8 @@ swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
 
 f0178111494a9ed024d3859793618152ea559a168bbcbb5e2
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ paste it here
-^^^^^^^^^ (prefix means CID v1, "git-raw" codec, SHA-128)
+^^^^^^^^^ prefix so CID is self-describing
+          (means roughly CID v1, "git-raw" codec, SHA-128, base-16)
 ```
 
 ## Setting up a bridge
