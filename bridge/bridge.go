@@ -160,9 +160,6 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
 
-	// TODO: Work out how to differentiate between different object types
-	// (content, snapshot, tree, commit) without hitting the API 4 times
-	// per Get. I don't think we have access to the codec in this method..
 	if err == nil {
 		return b.fetchHash(hash, key)
 	}
