@@ -72,11 +72,9 @@ func (*BridgePlugin) DatastoreTypeName() string {
 }
 
 type bridgeDatastoreConfig struct {
-	config map[string]interface{} // Go moment
+	config map[string]interface{}
 }
 
-// TODO: Investigate possibility of caching fetched objects locally à la
-// flatfs?
 func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 	return nil
 }
@@ -144,7 +142,7 @@ func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
 
 	fmt.Printf("swh bridge: hash fetched: %s\n", hash)
 
-	/* We need to add the git blob header (so the string "blob", the byte
+	/* We need to prepend the git blob header (the string "blob", the byte
 	 * length as decimal digits, and a zero byte) to the returned contents,
 	 * otherwise other IPFS nodes have no reason to believe that the data
 	 * we just gave them is what we said we gave them. */
@@ -201,7 +199,7 @@ func (c *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
 }
 
 func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
-	return func(cfg map[string]interface{}) (fsrepo.DatastoreConfig, error) { // Go moment
+	return func(cfg map[string]interface{}) (fsrepo.DatastoreConfig, error) {
 		return &bridgeDatastoreConfig{cfg}, nil
 	}
 }
