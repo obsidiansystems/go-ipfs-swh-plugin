@@ -14,7 +14,7 @@ swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
 f0178111494a9ed024d3859793618152ea559a168bbcbb5e2
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ paste it here
 ^^^^^^^^^ prefix so CID is self-describing
-          (means roughly CID v1, "git-raw" codec, SHA-128, base-16)
+          (means roughly CID v1, "git-raw" codec, SHA-1, base-16)
 ```
 
 ## Setting up a bridge
