@@ -34,7 +34,8 @@ using any of the standard ipfs reading commands:
 
 ```bash
 $ unset IPFS_PATH
-#       ^^^ To avoid /var/lib/ipfs if installed globally, at least on NixOS
+#       ^^^ To avoid /var/lib/ipfs if installed globally, at least on
+#       ^^^ NixOS.
 $ result/bin/ipfs init -e -p swhbridge
 $ result/bin/ipfs dag get \
     --output-codec=git-raw \
@@ -45,3 +46,14 @@ $ result/bin/ipfs dag get \
 
 Nodes connecting to a bridge node do not need to have the plugin to
 fetch data from the SWH archive. In this way, it's entirely transparent.
+
+## Browsing the archive
+
+We recommend going to https://archive.softwareheritage.org/browse/,
+finding a file, and then clicking the floating "Permalinks" on the right
+side to get a `swh:1:cnt:...` SWHID. One can then follow the
+instructions at the top of this readme to fetch it.
+
+Once we can implement fetching the other types objects, however, one can
+just pick a repo root hash and browse from there all with just the IPFS
+API!
