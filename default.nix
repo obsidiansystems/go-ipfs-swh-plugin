@@ -20,7 +20,7 @@ let
 
   # Filter the plugin sources to just the skeleton + Go files
   filter = with lib; path: type:
-    (type == "directory" && !(elem (baseNameOf path) [ ".git" "dep" ]))
+    (type == "directory" && !(elem (baseNameOf path) [ ".git" "dep" "vendor" ]))
     || hasSuffix ".go" (baseNameOf path);
 
   # This derivation copies the plugin *sources* to the same directory
