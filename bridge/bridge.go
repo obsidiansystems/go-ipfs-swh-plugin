@@ -1,7 +1,9 @@
 package bridge
 
 import (
+	"bytes"
 	ctx "context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -116,53 +118,82 @@ func keyToGit(key ds.Key) (string, error) {
 	return str[1:], nil
 }
 
-func (b BridgeDs) fetchHash(hash string, key ds.Key) ([]byte, error) {
-	// TODO: Hit the "/api/1/known" endpoint with a POST request with the
-	// set of possible SWHIDs for the given hash, then fetch only the
-	// SWHID in the object which was indicated to exist.
+var base_url string = "https://archive.softwareheritage.org"
 
-	/* Attempt 1: Fetch the given hash as a blob. We hit the "content" SWH
-	 * API endpoint, and use that as the contents. */
-	fmt.Printf("swh bridge: fetching hash: %s\n", hash)
-	url := fmt.Sprintf("https://archive.softwareheritage.org/api/1/content/sha1_git:%s/raw/", hash)
-
-	resp, err := http.Get(url)
+func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
+	/* Hit the "/api/1/known" endpoint with a POST request with the set of
+	 * possible SWHIDs for the given hash to find which one exists. */
+	fmt.Printf("SWH bridge: lookup up hash: %s\n", hash)
+	req, err := json.Marshal([]string{
+		fmt.Sprintf("swh:1:cnt:%s", hash),
+		fmt.Sprintf("swh:1:dir:%s", hash),
+		fmt.Sprintf("swh:1:rev:%s", hash),
+		fmt.Sprintf("swh:1:rel:%s", hash),
+		fmt.Sprintf("swh:1:snp:%s", hash),
+	})
 	if err != nil {
 		return nil, err
 	}
-
+	resp, err := http.Post(fmt.Sprintf("%s/api/1/known", base_url), "application/json", bytes.NewReader(req))
+	if err != nil {
+		return nil, err
+	}
 	if resp.StatusCode != 200 {
 		return nil, ds.ErrNotFound
 	}
+	var respParsed map[string]struct{ known bool }
+	if err := json.NewDecoder(resp.Body).Decode(&respParsed); err != nil {
+		return nil, err
+	}
 
-	buf, err := ioutil.ReadAll(resp.Body)
+	for s, v := range respParsed {
+		if v.known {
+			return &s, nil
+			break
+		}
+	}
+	return nil, ds.ErrNotFound
+}
+
+func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
+	/* Fetch the given hash as a blob. We hit the "content" SWH API
+	 * endpoint, and use that as the contents. */
+	fmt.Printf("SWH bridge: fetching SWHID: %s\n", swhid)
+	url := fmt.Sprintf("%s/api/1/raw/%s", base_url, swhid)
+
+	resp1, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp1.StatusCode != 200 {
+		return nil, ds.ErrNotFound
+	}
+
+	buf, err := ioutil.ReadAll(resp1.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("swh bridge: hash fetched: %s\n", hash)
+	fmt.Printf("SWH bridge: SWHID fetched: %s\n", swhid)
 
-	/* We need to prepend the git blob header (the string "blob", the byte
-	 * length as decimal digits, and a zero byte) to the returned contents,
-	 * otherwise other IPFS nodes have no reason to believe that the data
-	 * we just gave them is what we said we gave them. */
-	head := fmt.Sprintf("blob %d\x00", len(buf))
-	buffer := make([]byte, len(head))
-	copy(buffer, head)
-	buffer = append(buffer, buf...)
-
-	return buffer, nil
+	return buf, nil
 }
 
 func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
-
-	if err == nil {
-		return b.fetchHash(hash, key)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	var swhid string = ""
+	if p, err := b.findSwhidFromGit(hash); p != nil && err == nil {
+		swhid = *p
+	} else {
+		return nil, err
+	}
+
+	return b.fetchSwhid(swhid, key)
 }
 
 func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
