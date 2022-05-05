@@ -14,6 +14,7 @@ import (
 	plugin "github.com/ipfs/go-ipfs/plugin"
 	"github.com/ipfs/go-ipfs/repo"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
+	logging "github.com/ipfs/go-log"
 	"github.com/multiformats/go-base32"
 	mb "github.com/multiformats/go-multibase"
 	mh "github.com/multiformats/go-multihash"
@@ -90,6 +91,9 @@ func (c BridgeDs) Close() error {
 	return nil
 }
 
+// swhlog is the logger for the SWH Bridge
+var swhlog = logging.Logger("swh-bridge")
+
 // Parse a datastore key as a SHA1 multihash, and encode it in hex
 // (codec 'f'), dropping the signifier byte.
 func keyToGit(key ds.Key) (string, error) {
@@ -123,7 +127,7 @@ var base_url string = "https://archive.softwareheritage.org"
 func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	/* Hit the "/api/1/known" endpoint with a POST request with the set of
 	 * possible SWHIDs for the given hash to find which one exists. */
-	fmt.Printf("SWH bridge: lookup up hash: %s\n", hash)
+	swhlog.Debugf("lookup up hash: %s\n", hash)
 	req, err := json.Marshal([]string{
 		fmt.Sprintf("swh:1:cnt:%s", hash),
 		fmt.Sprintf("swh:1:dir:%s", hash),
@@ -148,19 +152,19 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 
 	for s, v := range respParsed {
 		if v.Known {
-			fmt.Printf("SWH bridge: found SWHID %s", s)
+			swhlog.Debugf("found SWHID %s", s)
 			return &s, nil
 			break
 		}
 	}
-	fmt.Printf("SWH bridge: no SWHID found")
+	swhlog.Debugf("no SWHID found for %s", hash)
 	return nil, ds.ErrNotFound
 }
 
 func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 	/* Fetch the given hash as a blob. We hit the "content" SWH API
 	 * endpoint, and use that as the contents. */
-	fmt.Printf("SWH bridge: fetching SWHID: %s\n", swhid)
+	swhlog.Debugf("fetching SWHID: %s\n", swhid)
 	url := fmt.Sprintf("%s/api/1/raw/%s/", base_url, swhid)
 
 	resp1, err := http.Get(url)
@@ -176,7 +180,7 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Printf("SWH bridge: SWHID fetched: %s\n", swhid)
+	swhlog.Debugf("SWHID fetched: %s\n", swhid)
 
 	return buf, nil
 }
