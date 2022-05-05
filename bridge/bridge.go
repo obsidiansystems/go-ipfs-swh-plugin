@@ -148,10 +148,12 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 
 	for s, v := range respParsed {
 		if v.Known {
+			fmt.Printf("SWH bridge: found SWHID %s", s)
 			return &s, nil
 			break
 		}
 	}
+	fmt.Printf("SWH bridge: no SWHID found")
 	return nil, ds.ErrNotFound
 }
 
