@@ -141,13 +141,13 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	if resp.StatusCode != 200 {
 		return nil, ds.ErrNotFound
 	}
-	var respParsed map[string]struct{ known bool }
+	var respParsed map[string]struct{ Known bool }
 	if err := json.NewDecoder(resp.Body).Decode(&respParsed); err != nil {
 		return nil, err
 	}
 
 	for s, v := range respParsed {
-		if v.known {
+		if v.Known {
 			return &s, nil
 			break
 		}
