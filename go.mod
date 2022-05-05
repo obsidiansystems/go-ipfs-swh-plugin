@@ -8,6 +8,7 @@ require (
 	github.com/ipfs/go-ipfs v0.11.0
 	github.com/ipfs/go-ipfs-config v0.18.0
 	github.com/ipfs/interface-go-ipfs-core v0.5.2 // indirect
+	github.com/ipfs/go-log v1.0.5
 	github.com/multiformats/go-base32 v0.0.3
 	github.com/multiformats/go-multibase v0.0.3
 	github.com/multiformats/go-multihash v0.1.0
