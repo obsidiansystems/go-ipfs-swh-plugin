@@ -134,7 +134,7 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(fmt.Sprintf("%s/api/1/known", base_url), "application/json", bytes.NewReader(req))
+	resp, err := http.Post(fmt.Sprintf("%s/api/1/known/", base_url), "application/json", bytes.NewReader(req))
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 	/* Fetch the given hash as a blob. We hit the "content" SWH API
 	 * endpoint, and use that as the contents. */
 	fmt.Printf("SWH bridge: fetching SWHID: %s\n", swhid)
-	url := fmt.Sprintf("%s/api/1/raw/%s", base_url, swhid)
+	url := fmt.Sprintf("%s/api/1/raw/%s/", base_url, swhid)
 
 	resp1, err := http.Get(url)
 	if err != nil {
