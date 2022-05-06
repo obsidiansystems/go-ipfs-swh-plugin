@@ -211,7 +211,7 @@ func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
 }
 
 func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
-	fmt.Printf("query: %s\n", q)
+	swhlog.Debugf("query: %s\n", q)
 	return nil, nil
 }
 

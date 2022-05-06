@@ -5,16 +5,32 @@ implemented as a datastore.
 
 Using the `makecid.py` script included in the repository, or by pasting
 the magic `f01781114` bytes in front of an identifier hash, you can
-convert a SWHID to a CID which the bridge can handle.
+convert a git-like SWHID to a CID which the bridge can handle.
 
 ```
 swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ copy this part
+      ^^^ must be one of "cnt", "dir", "rev", or "rel"
 
 f0178111494a9ed024d3859793618152ea559a168bbcbb5e2
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ paste it here
 ^^^^^^^^^ prefix so CID is self-describing
           (means roughly CID v1, "git-raw" codec, SHA-1, base-16)
+```
+
+For snapshots, however the magic prefix is different, since they are not
+also git objects.
+
+```
+swh:1:snp:9dcebebe2bb56cabdd536787886d582b762a0376
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ copy this part
+
+      ^^^ must be "snp"
+
+f01F00311149dcebebe2bb56cabdd536787886d582b762a0376
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ paste it here
+^^^^^^^^^^^ prefix so CID is self-describing
+		    (means roughly CID v1, "swh-1-snp" codec, SHA-1, base-16)
 ```
 
 ## Setting up a bridge
@@ -64,6 +80,14 @@ Fetch a revision:
 $ result/bin/ipfs dag get \
     f017811141a0dd0088247f9d4e403a460f0f6120184af3e15 | jq
 #   ^^^ CID corresponding to a recent GHC commit
+```
+
+Fetch a snapshot:
+```bash
+$ result/bin/ipfs dag get \
+    f01F00311149dcebebe2bb56cabdd536787886d582b762a0376 | jq
+#   ^^^ CID corresponding to a recent github.com/reflex-frp/patch
+        snapshot
 ```
 
 Fetch recursively (!):
