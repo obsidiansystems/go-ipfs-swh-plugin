@@ -52,7 +52,7 @@ let
     inherit (go-ipfs-swh-plugin) pname version;
     src = builtins.filterSource filterMeta ./.;
 
-    vendorSha256 = "0vqkalgp8b8pymf8hnwr89cq41pcc5b65rssn0aknv2fnr1ja06g";
+    vendorSha256 = "12lw8gvjfjv8v7m3ci1xcsm74n8qyrh2ch7k7f91hpn0sswcnf6p";
     overrideModAttrs = old: {
       # Don't need IPFS because we will get from the other vendor.  Not
       # doing this causes a conflict.

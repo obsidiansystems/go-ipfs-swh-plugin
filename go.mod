@@ -11,7 +11,7 @@ require (
 	github.com/multiformats/go-base32 v0.0.3
 	github.com/multiformats/go-multibase v0.0.3
 	github.com/multiformats/go-multihash v0.1.0
-	github.com/obsidiansystems/go-ipld-swh v0.0.0-20220506163937-9312b2bb4740
+	github.com/obsidiansystems/go-ipld-swh v0.0.0-20220506170730-704c789b5d4d
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
 	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886 // indirect
 )
