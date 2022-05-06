@@ -82,6 +82,14 @@ $ result/bin/ipfs dag get \
 #   ^^^ CID corresponding to a recent GHC commit
 ```
 
+Fetch a snapshot:
+```bash
+$ result/bin/ipfs dag get \
+    f01F00311149dcebebe2bb56cabdd536787886d582b762a0376 | jq
+#   ^^^ CID corresponding to a recent github.com/reflex-frp/patch
+        snapshot
+```
+
 Fetch recursively (!):
 ```bash
 $ result/bin/ipfs dag get \
