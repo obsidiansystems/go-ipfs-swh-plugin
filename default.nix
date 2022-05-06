@@ -19,7 +19,13 @@ let
   inherit (pkgs) lib;
 
   # Filter the plugin sources to just the skeleton + Go files
-  filter = with lib; path: type: let
+  filterSrc = with lib; path: type: let
+    bpath = baseNameOf path;
+  in
+    (type == "directory" && !(elem bpath [ ".git" "dep" "vendor" ]))
+    || hasSuffix ".go" bpath;
+
+  filterMeta = with lib; path: type: let
     bpath = baseNameOf path;
   in
     (type == "directory" && !(elem bpath [ ".git" "dep" "vendor" ]))
@@ -32,7 +38,7 @@ let
   go-ipfs-swh-plugin = pkgs.stdenv.mkDerivation rec {
     pname = "go-ipfs-swh-plugin";
     version = "0.0.1";
-    src = builtins.filterSource filter ./.;
+    src = builtins.filterSource filterSrc ./.;
 
     installPhase = ''
     mkdir -p $out/github.com/obsidiansystems/${pname}
@@ -43,9 +49,10 @@ let
   # Use the Nixpkgs Go build support to generate a fixed-output
   # derivation of the *dependencies* of this package.
   go-ipfs-swh-plugin-vendor = (pkgs.buildGoModule {
-    inherit (go-ipfs-swh-plugin) pname version src;
+    inherit (go-ipfs-swh-plugin) pname version;
+    src = builtins.filterSource filterMeta ./.;
 
-    vendorSha256 = "0gqfvxcjfvjzvvw7hg6197qm6zfchbd01z2yq97lcxskwdqzcj3n";
+    vendorSha256 = "0vqkalgp8b8pymf8hnwr89cq41pcc5b65rssn0aknv2fnr1ja06g";
     overrideModAttrs = old: {
       # Don't need IPFS because we will get from the other vendor.  Not
       # doing this causes a conflict.
