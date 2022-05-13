@@ -87,7 +87,7 @@ Fetch a snapshot:
 $ result/bin/ipfs dag get \
     f01F00311149dcebebe2bb56cabdd536787886d582b762a0376 | jq
 #   ^^^ CID corresponding to a recent github.com/reflex-frp/patch
-        snapshot
+#       snapshot
 ```
 
 Fetch recursively (!):
