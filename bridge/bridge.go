@@ -77,7 +77,8 @@ func (*BridgePlugin) DatastoreTypeName() string {
 }
 
 type bridgeDatastoreConfig struct {
-	config map[string]interface{}
+	base_url   *url.URL
+	auth_token *string
 }
 
 func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
@@ -85,8 +86,7 @@ func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 }
 
 type BridgeDs struct {
-	base_url   *url.URL
-	auth_token *string
+	cfg *bridgeDatastoreConfig
 }
 
 var _ repo.Datastore = (*BridgeDs)(nil)
@@ -129,11 +129,11 @@ func keyToGit(key ds.Key) (string, error) {
 func (b BridgeDs) customHeaderReq() http.Request {
 	var req http.Request
 	req.Header = map[string][]string{}
-	if b.auth_token != nil {
-		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *b.auth_token)}
+	if b.cfg.auth_token != nil {
+		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *b.cfg.auth_token)}
 	}
 	req.URL = new(url.URL)
-	*req.URL = *b.base_url
+	*req.URL = *b.cfg.base_url
 	return req
 }
 
@@ -254,21 +254,38 @@ func (b BridgeDs) Batch(ctx ctx.Context) (ds.Batch, error) {
 	return ds.NewBasicBatch(b), nil
 }
 
-func (c *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
-	base_url, err := url.Parse("https://archive.softwareheritage.org")
-	if err != nil {
-		return BridgeDs{}, err
-	}
-
-	temp := "asdf"
-	return BridgeDs{
-		base_url:   base_url,
-		auth_token: &temp,
-	}, nil
+func (cfg *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
+	return BridgeDs{cfg}, nil
 }
 
 func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
-	return func(cfg map[string]interface{}) (fsrepo.DatastoreConfig, error) {
-		return &bridgeDatastoreConfig{cfg}, nil
+	return func(params map[string]interface{}) (fsrepo.DatastoreConfig, error) {
+		base_url_v, ok := params["base-url"]
+		base_url_s := "https://archive.softwareheritage.org"
+		if ok {
+			base_url_s, ok = base_url_v.(string)
+			if !ok {
+				return nil, fmt.Errorf("base-url value was not a string")
+			}
+		}
+
+		base_url, err := url.Parse(base_url_s)
+		if err != nil {
+			return nil, err
+		}
+
+		var auth_token *string
+		auth_token_v := params["auth-token"]
+		if ok {
+			auth_token, ok = auth_token_v.(*string)
+			if !ok {
+				return nil, fmt.Errorf("auth-token value was not a string")
+			}
+		}
+
+		return &bridgeDatastoreConfig{
+			base_url,
+			auth_token,
+		}, nil
 	}
 }
