@@ -265,7 +265,7 @@ func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
 		if ok {
 			base_url_s, ok = base_url_v.(string)
 			if !ok {
-				return nil, fmt.Errorf("base-url value was not a string")
+				return nil, fmt.Errorf("base-url %q is not a string", base_url_v)
 			}
 		}
 
@@ -275,12 +275,13 @@ func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
 		}
 
 		var auth_token *string
-		auth_token_v := params["auth-token"]
+		auth_token_v, ok := params["auth-token"]
 		if ok {
-			auth_token, ok = auth_token_v.(*string)
+			auth_token_s, ok := auth_token_v.(string)
 			if !ok {
-				return nil, fmt.Errorf("auth-token value was not a string")
+				return nil, fmt.Errorf("auth-token %q is not a string", auth_token_v)
 			}
+			auth_token = &auth_token_s
 		}
 
 		return &bridgeDatastoreConfig{
