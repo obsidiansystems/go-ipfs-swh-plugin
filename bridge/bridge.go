@@ -126,20 +126,24 @@ func keyToGit(key ds.Key) (string, error) {
 	return str[1:], nil
 }
 
-func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
-	/* Hit the "/api/1/known" endpoint with a POST request with the set of
-	 * possible SWHIDs for the given hash to find which one exists. */
-	swhlog.Debugf("lookup up hash: %s\n", hash)
+func (b BridgeDs) customHeaderReq() http.Request {
 	var req http.Request
-	req.Method = "POST"
-	req.Header = map[string][]string{
-		"Content-Type": {"application/json"},
-	}
+	req.Header = map[string][]string{}
 	if b.auth_token != nil {
 		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *b.auth_token)}
 	}
 	req.URL = new(url.URL)
 	*req.URL = *b.base_url
+	return req
+}
+
+func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
+	/* Hit the "/api/1/known" endpoint with a POST request with the set of
+	 * possible SWHIDs for the given hash to find which one exists. */
+	swhlog.Debugf("lookup up hash: %s\n", hash)
+	req := b.customHeaderReq()
+	req.Method = "POST"
+	req.Header["Content-Type"] = []string{"application/json"}
 	req.URL.Path = "/api/1/known/"
 
 	req2, err := json.Marshal([]string{
@@ -181,16 +185,9 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 	 * endpoint, and use that as the contents. */
 	swhlog.Debugf("fetching SWHID: %s\n", swhid)
 
-	var req http.Request
+	req := b.customHeaderReq()
 	req.Method = "GET"
-	req.Header = map[string][]string{
-		"Content-Type": {"application/octet-stream"},
-	}
-	if b.auth_token != nil {
-		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *b.auth_token)}
-	}
-	req.URL = new(url.URL)
-	*req.URL = *b.base_url
+	req.Header["Content-Type"] = []string{"application/octet-stream"}
 	req.URL.Path = fmt.Sprintf("/api/1/raw/%s/", swhid)
 
 	resp1, err := http.DefaultClient.Do(&req)
