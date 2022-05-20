@@ -5,8 +5,10 @@ import (
 	ctx "context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
@@ -75,7 +77,8 @@ func (*BridgePlugin) DatastoreTypeName() string {
 }
 
 type bridgeDatastoreConfig struct {
-	config map[string]interface{}
+	base_url   *url.URL
+	auth_token *string
 }
 
 func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
@@ -83,6 +86,7 @@ func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 }
 
 type BridgeDs struct {
+	cfg *bridgeDatastoreConfig
 }
 
 var _ repo.Datastore = (*BridgeDs)(nil)
@@ -122,13 +126,27 @@ func keyToGit(key ds.Key) (string, error) {
 	return str[1:], nil
 }
 
-var base_url string = "https://archive.softwareheritage.org"
+func (b BridgeDs) customHeaderReq() http.Request {
+	var req http.Request
+	req.Header = map[string][]string{}
+	if b.cfg.auth_token != nil {
+		req.Header["Authorization"] = []string{fmt.Sprintf("Bearer %s", *b.cfg.auth_token)}
+	}
+	req.URL = new(url.URL)
+	*req.URL = *b.cfg.base_url
+	return req
+}
 
 func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	/* Hit the "/api/1/known" endpoint with a POST request with the set of
 	 * possible SWHIDs for the given hash to find which one exists. */
 	swhlog.Debugf("lookup up hash: %s\n", hash)
-	req, err := json.Marshal([]string{
+	req := b.customHeaderReq()
+	req.Method = "POST"
+	req.Header["Content-Type"] = []string{"application/json"}
+	req.URL.Path = "/api/1/known/"
+
+	req2, err := json.Marshal([]string{
 		fmt.Sprintf("swh:1:cnt:%s", hash),
 		fmt.Sprintf("swh:1:dir:%s", hash),
 		fmt.Sprintf("swh:1:rev:%s", hash),
@@ -138,7 +156,8 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(fmt.Sprintf("%s/api/1/known/", base_url), "application/json", bytes.NewReader(req))
+	req.Body = io.NopCloser(bytes.NewReader(req2))
+	resp, err := http.DefaultClient.Do(&req)
 	if err != nil {
 		return nil, err
 	}
@@ -165,9 +184,13 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 	/* Fetch the given hash as a blob. We hit the "content" SWH API
 	 * endpoint, and use that as the contents. */
 	swhlog.Debugf("fetching SWHID: %s\n", swhid)
-	url := fmt.Sprintf("%s/api/1/raw/%s/", base_url, swhid)
 
-	resp1, err := http.Get(url)
+	req := b.customHeaderReq()
+	req.Method = "GET"
+	req.Header["Content-Type"] = []string{"application/octet-stream"}
+	req.URL.Path = fmt.Sprintf("/api/1/raw/%s/", swhid)
+
+	resp1, err := http.DefaultClient.Do(&req)
 	if err != nil {
 		return nil, err
 	}
@@ -231,12 +254,39 @@ func (b BridgeDs) Batch(ctx ctx.Context) (ds.Batch, error) {
 	return ds.NewBasicBatch(b), nil
 }
 
-func (c *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
-	return BridgeDs{}, nil
+func (cfg *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
+	return BridgeDs{cfg}, nil
 }
 
 func (*BridgePlugin) DatastoreConfigParser() fsrepo.ConfigFromMap {
-	return func(cfg map[string]interface{}) (fsrepo.DatastoreConfig, error) {
-		return &bridgeDatastoreConfig{cfg}, nil
+	return func(params map[string]interface{}) (fsrepo.DatastoreConfig, error) {
+		base_url_v, ok := params["base-url"]
+		base_url_s := "https://archive.softwareheritage.org"
+		if ok {
+			base_url_s, ok = base_url_v.(string)
+			if !ok {
+				return nil, fmt.Errorf("base-url %q is not a string", base_url_v)
+			}
+		}
+
+		base_url, err := url.Parse(base_url_s)
+		if err != nil {
+			return nil, err
+		}
+
+		var auth_token *string
+		auth_token_v, ok := params["auth-token"]
+		if ok {
+			auth_token_s, ok := auth_token_v.(string)
+			if !ok {
+				return nil, fmt.Errorf("auth-token %q is not a string", auth_token_v)
+			}
+			auth_token = &auth_token_s
+		}
+
+		return &bridgeDatastoreConfig{
+			base_url,
+			auth_token,
+		}, nil
 	}
 }

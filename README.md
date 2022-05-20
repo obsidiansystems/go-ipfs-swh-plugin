@@ -54,6 +54,24 @@ $ unset IPFS_PATH
 $ result/bin/ipfs init -e -p swhbridge
 ```
 
+If you have an SWH authentication token, you can add it to the config
+file just created with `ipfs init`:
+
+``` diff
+--- a/config
++++ b/config
+@@ -11,7 +11,8 @@
+       "mounts": [
+         {
+           "child": {
+-            "type": "swhbridge"
++            "type": "swhbridge",
++            "auth-token": "<paste token here>"
+           },
+           "mountpoint": "/blocks",
+           "prefix": "swhbridge.datastore",
+```
+
 ## Using the bridge
 
 After setting up, try to test fetching using any of the standard ipfs
