@@ -4,6 +4,7 @@ import (
 	"bytes"
 	ctx "context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -247,19 +248,19 @@ func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
 
 func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
 	swhlog.Debugf("query: %s\n", q)
-	return nil, nil
+	return nil, errors.New("Query is not supported")
 }
 
 func (b BridgeDs) Put(ctx ctx.Context, key ds.Key, value []byte) error {
-	return nil
+	return errors.New("Put is not supported")
 }
 
 func (b BridgeDs) Delete(ctx ctx.Context, key ds.Key) error {
-	return nil
+	return errors.New("Delete is not supported")
 }
 
 func (b BridgeDs) Sync(ctx ctx.Context, prefix ds.Key) error {
-	return nil
+	return errors.New("Sync is not supported")
 }
 
 func (b BridgeDs) Batch(ctx ctx.Context) (ds.Batch, error) {
