@@ -226,11 +226,23 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 }
 
 func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
-	return false, nil
+	// Try to parse the key as a Git hash
+	hash, err := keyToGit(key)
+	if err != nil {
+		// Non-git is not and error, just something we don't have.
+		return false, nil
+	}
+
+	if p, err := b.findSwhidFromGit(hash); err == nil {
+		return p != nil, nil
+	} else {
+		return false, err
+	}
 }
 
 func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
-	return 0, ds.ErrNotFound
+	// TODO Don't actually fetch the data.
+	return ds.GetBackedSize(ctx, b, key)
 }
 
 func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
