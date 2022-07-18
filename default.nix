@@ -109,6 +109,13 @@ pkgs.buildGoModule rec {
   # ^^^ Use a "pre-existing" vendor. Actually, we're going to smuggle in
   # our own vendor.
 
+  outputs = [
+    "out"
+    # Choice of two different system units
+    "systemd_unit"
+    "systemd_unit_hardened"
+  ];
+
   subPackages = [ "cmd/ipfs" ];
   # ^^^ What Go packages will be built (cmd/ipfs is the IPFS CLI)
 
