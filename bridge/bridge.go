@@ -98,6 +98,14 @@ func (c BridgeDs) Close() error {
 // swhlog is the logger for the SWH Bridge
 var swhlog = logging.Logger("swh-bridge")
 
+type nonGitHash struct {
+	Code uint64
+}
+
+func (e nonGitHash) Error() string {
+	return fmt.Sprintf("Data was a multihash encoded with %d, but expected %d (SHA1)", e.Code, mh.SHA1)
+}
+
 // Parse a datastore key as a SHA1 multihash, and encode it in hex
 // (codec 'f'), dropping the signifier byte.
 func keyToGit(key ds.Key) (string, error) {
@@ -114,7 +122,7 @@ func keyToGit(key ds.Key) (string, error) {
 	}
 
 	if myh.Code != mh.SHA1 {
-		return "", fmt.Errorf("data was a multihash encoded with %d, but expected %d (SHA1)", myh.Code, mh.SHA1)
+		return "", nonGitHash{Code: myh.Code}
 	}
 
 	// Re-encode it in hex
@@ -212,7 +220,14 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
 	if err != nil {
-		return nil, err
+		e, ok := err.(nonGitHash)
+		if ok {
+			// Non-git is not an error, just something we don't have.
+			swhlog.Debugf("Key bridge can't get: %s", e.Error())
+			return nil, ds.ErrNotFound
+		} else {
+			return nil, err
+		}
 	}
 
 	var swhid string = ""
@@ -229,8 +244,16 @@ func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
 	if err != nil {
-		// Non-git is not and error, just something we don't have.
+		// Non-git is not an error, just something we don't have.
 		return false, nil
+		e, ok := err.(nonGitHash)
+		if ok {
+			// Non-git is not an error, just something we don't have.
+			swhlog.Debugf("Key bridge doesn't have: %s", e.Error())
+			return false, nil
+		} else {
+			return false, err
+		}
 	}
 
 	if p, err := b.findSwhidFromGit(hash); err == nil {
