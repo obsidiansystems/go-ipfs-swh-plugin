@@ -1,4 +1,4 @@
-package example
+package swh
 
 import (
 	"github.com/ipfs/go-ipfs/plugin"

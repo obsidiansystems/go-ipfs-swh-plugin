@@ -11,7 +11,7 @@ type BridgePlugin struct{}
 var _ plugin.PluginDatastore = (*BridgePlugin)(nil)
 
 func (*BridgePlugin) Name() string {
-	return "swhds"
+	return "swhbridge"
 }
 
 func (*BridgePlugin) Version() string {
