@@ -18,7 +18,7 @@ index 54b8dee6fc..1540028061 100644
 -peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
 \ No newline at end of file
 +peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
-+swhid github.com/obsidiansystems/go-ipfs-swh-plugin *
++swh github.com/obsidiansystems/go-ipfs-swh-plugin *
 -- 
 2.34.1
 
