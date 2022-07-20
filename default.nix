@@ -64,12 +64,7 @@ let
   # ^^^^^^^^^^^^ This means that we don't build this plugin twice.
 
   # IPFS master as of 2022-02-03, 14:00 GMT-3
-  ipfs-source = pkgs.fetchFromGitHub {
-    owner = "ipfs";
-    repo = "go-ipfs";
-    rev = "cde79df1408c3bd518fec1622d97bf4a251af81e";
-    sha256 = "1a9sylxv8ay6lvv1w3qhg29pyzk81szx3s20k00fa7k8bglwlw7j";
-  };
+  ipfs-source = import ./dep/kubo/thunk.nix;
 
   # The version that ^^^ reports itself as
   ipfs-version = "v0.13.0";
