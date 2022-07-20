@@ -55,6 +55,8 @@ func keyToGit(key ds.Key) (string, error) {
 		return "", err
 	}
 
+	// Return error of the resulting multihash is not something we can
+	// relay to SWH.
 	if myh.Code != mh.SHA1 {
 		return "", nonGitHash{Code: myh.Code}
 	}
@@ -80,14 +82,17 @@ func (b BridgeDs) customHeaderReq() http.Request {
 }
 
 func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
-	/* Hit the "/api/1/known" endpoint with a POST request with the set of
-	 * possible SWHIDs for the given hash to find which one exists. */
+	// Hit the "/api/1/known" endpoint with a POST request with the set
+	// of possible SWHIDs for the given hash to find which one exists.
 	swhlog.Infof("lookup up hash: %s\n", hash)
+
+	// Build request headers
 	req := b.customHeaderReq()
 	req.Method = "POST"
 	req.Header["Content-Type"] = []string{"application/json"}
 	req.URL.Path = "/api/1/known/"
 
+	// Build JSON request body, with each possible SWHID.
 	req2, err := json.Marshal([]string{
 		fmt.Sprintf("swh:1:cnt:%s", hash),
 		fmt.Sprintf("swh:1:dir:%s", hash),
@@ -98,6 +103,8 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Issue the request
 	req.Body = io.NopCloser(bytes.NewReader(req2))
 	resp, err := http.DefaultClient.Do(&req)
 	if err != nil {
@@ -106,11 +113,14 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	if resp.StatusCode != 200 {
 		return nil, ds.ErrNotFound
 	}
+
+	// Parse the response
 	var respParsed map[string]struct{ Known bool }
 	if err := json.NewDecoder(resp.Body).Decode(&respParsed); err != nil {
 		return nil, err
 	}
 
+	// Take the first one that is "known", i.e. that exists.
 	for s, v := range respParsed {
 		if v.Known {
 			swhlog.Infof("found SWHID %s", s)
@@ -118,20 +128,24 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 			break
 		}
 	}
+
+	// Return error if none were known.
 	swhlog.Infof("no SWHID found for %s", hash)
 	return nil, ds.ErrNotFound
 }
 
 func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
-	/* Fetch the given hash as a blob. We hit the "content" SWH API
-	 * endpoint, and use that as the contents. */
+	// Fetch the given hash as a blob. We hit the "content" SWH API
+	// endpoint, and use that as the contents.
 	swhlog.Infof("fetching SWHID: %s\n", swhid)
 
+	// Build request headers
 	req := b.customHeaderReq()
 	req.Method = "GET"
 	req.Header["Content-Type"] = []string{"application/octet-stream"}
 	req.URL.Path = fmt.Sprintf("/api/1/raw/%s/", swhid)
 
+	// Issue the request
 	resp1, err := http.DefaultClient.Do(&req)
 	if err != nil {
 		return nil, err
@@ -140,6 +154,7 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 		return nil, ds.ErrNotFound
 	}
 
+	// Read response into array
 	buf, err := ioutil.ReadAll(resp1.Body)
 	if err != nil {
 		return nil, err
@@ -160,6 +175,8 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 			swhlog.Debugf("Requested key bridge can't get: %s", e.Error())
 			return nil, ds.ErrNotFound
 		} else {
+			// Other error actually is an errors, probably indicate
+			// malformed keys.
 			return nil, err
 		}
 	}
@@ -178,7 +195,6 @@ func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
 	// Try to parse the key as a Git hash
 	hash, err := keyToGit(key)
 	if err != nil {
-		// Non-git is not an error, just something we don't have.
 		return false, nil
 		e, ok := err.(nonGitHash)
 		if ok {
@@ -186,11 +202,15 @@ func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
 			swhlog.Debugf("Requested key bridge doesn't have: %s", e.Error())
 			return false, nil
 		} else {
+			// Other error actually is an errors, probably indicate
+			// malformed keys.
 			return false, err
 		}
 	}
 
 	if p, err := b.findSwhidFromGit(hash); err == nil {
+		// We don't care what a found SWHID is, just whether one was in
+		// fact found (null pointer vs string).
 		return p != nil, nil
 	} else {
 		return false, err

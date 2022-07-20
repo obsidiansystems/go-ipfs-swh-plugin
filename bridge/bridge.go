@@ -23,6 +23,13 @@ func bridgeSpec() map[string]interface{} {
 		"type": "mount",
 		"mounts": []interface{}{
 			map[string]interface{}{
+				// Indicates not where the data store goes (for the
+				// bridge doesn't use the filesystem at all!), but
+				// rather what keys (selected by prefix) should use this
+				// data store.
+				//
+				// The SWH bridge looks up blocks so this is the right
+				// one.
 				"mountpoint": "/blocks",
 				"type":       "measure",
 				"prefix":     "swhbridge.datastore",
