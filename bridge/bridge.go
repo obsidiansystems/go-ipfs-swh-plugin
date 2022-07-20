@@ -76,17 +76,17 @@ func (*BridgePlugin) DatastoreTypeName() string {
 	return "swhbridge"
 }
 
-type bridgeDatastoreConfig struct {
+type BridgeDatastoreConfig struct {
 	base_url   *url.URL
 	auth_token *string
 }
 
-func (c *bridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
+func (c *BridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
 	return nil
 }
 
 type BridgeDs struct {
-	cfg *bridgeDatastoreConfig
+	cfg *BridgeDatastoreConfig
 }
 
 var _ repo.Datastore = (*BridgeDs)(nil)
@@ -289,11 +289,11 @@ func (b BridgeDs) Batch(ctx ctx.Context) (ds.Batch, error) {
 	return ds.NewBasicBatch(b), nil
 }
 
-func (cfg *bridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
+func (cfg *BridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
 	return BridgeDs{cfg}, nil
 }
 
-func ParseConfig(params map[string]interface{}) (*bridgeDatastoreConfig, error) {
+func ParseConfig(params map[string]interface{}) (*BridgeDatastoreConfig, error) {
 	base_url_v, ok := params["base-url"]
 	base_url_s := "https://archive.softwareheritage.org"
 	if ok {
@@ -318,7 +318,7 @@ func ParseConfig(params map[string]interface{}) (*bridgeDatastoreConfig, error) 
 		auth_token = &auth_token_s
 	}
 
-	return &bridgeDatastoreConfig{
+	return &BridgeDatastoreConfig{
 		base_url,
 		auth_token,
 	}, nil
