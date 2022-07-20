@@ -125,9 +125,11 @@ fetch data from the SWH archive. In this way, it's entirely transparent.
 The bridge uses [`go-log`](https://github.com/ipfs/go-log) like most
 IPFS software. Prefix you commands with e.g.
 ```bash
-GOLOG_LOG_LEVEL="swh-bridge=debug"
+GOLOG_LOG_LEVEL="swh-bridge=info"
 ```
-to see more information about what is going on.
+to see more information about what is going on. (One can do `=debug` too
+for even more info, but requests the bridge skips knowing it cannot
+handle add a fair bit of noise.)
 
 ## Browsing the archive
 

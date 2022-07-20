@@ -148,7 +148,7 @@ func (b BridgeDs) customHeaderReq() http.Request {
 func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 	/* Hit the "/api/1/known" endpoint with a POST request with the set of
 	 * possible SWHIDs for the given hash to find which one exists. */
-	swhlog.Debugf("lookup up hash: %s\n", hash)
+	swhlog.Infof("lookup up hash: %s\n", hash)
 	req := b.customHeaderReq()
 	req.Method = "POST"
 	req.Header["Content-Type"] = []string{"application/json"}
@@ -179,19 +179,19 @@ func (b BridgeDs) findSwhidFromGit(hash string) (*string, error) {
 
 	for s, v := range respParsed {
 		if v.Known {
-			swhlog.Debugf("found SWHID %s", s)
+			swhlog.Infof("found SWHID %s", s)
 			return &s, nil
 			break
 		}
 	}
-	swhlog.Debugf("no SWHID found for %s", hash)
+	swhlog.Infof("no SWHID found for %s", hash)
 	return nil, ds.ErrNotFound
 }
 
 func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 	/* Fetch the given hash as a blob. We hit the "content" SWH API
 	 * endpoint, and use that as the contents. */
-	swhlog.Debugf("fetching SWHID: %s\n", swhid)
+	swhlog.Infof("fetching SWHID: %s\n", swhid)
 
 	req := b.customHeaderReq()
 	req.Method = "GET"
@@ -211,7 +211,7 @@ func (b BridgeDs) fetchSwhid(swhid string, key ds.Key) ([]byte, error) {
 		return nil, err
 	}
 
-	swhlog.Debugf("SWHID fetched: %s\n", swhid)
+	swhlog.Infof("SWHID fetched: %s\n", swhid)
 
 	return buf, nil
 }
@@ -223,7 +223,7 @@ func (b BridgeDs) Get(ctx ctx.Context, key ds.Key) (value []byte, err error) {
 		e, ok := err.(nonGitHash)
 		if ok {
 			// Non-git is not an error, just something we don't have.
-			swhlog.Debugf("Key bridge can't get: %s", e.Error())
+			swhlog.Debugf("Requested key bridge can't get: %s", e.Error())
 			return nil, ds.ErrNotFound
 		} else {
 			return nil, err
@@ -249,7 +249,7 @@ func (b BridgeDs) Has(ctx ctx.Context, key ds.Key) (exists bool, err error) {
 		e, ok := err.(nonGitHash)
 		if ok {
 			// Non-git is not an error, just something we don't have.
-			swhlog.Debugf("Key bridge doesn't have: %s", e.Error())
+			swhlog.Debugf("Requested key bridge doesn't have: %s", e.Error())
 			return false, nil
 		} else {
 			return false, err
@@ -269,7 +269,7 @@ func (b BridgeDs) GetSize(ctx ctx.Context, key ds.Key) (size int, err error) {
 }
 
 func (b BridgeDs) Query(ctx ctx.Context, q query.Query) (query.Results, error) {
-	swhlog.Debugf("query: %s\n", q)
+	swhlog.Infof("query: %s\n", q)
 	return nil, nil
 }
 

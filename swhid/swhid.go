@@ -31,7 +31,7 @@ func (*SwhidPlugin) Init(env *plugin.Environment) error {
 }
 
 func (*SwhidPlugin) Register(reg multicodec.Registry) error {
-	swhidlog.Debugf("SWHID plugin loaded!\n")
+	swhidlog.Infof("SWHID plugin loaded!\n")
 	reg.RegisterEncoder(ipldswh.Swh1Snp, ipldswh.EncodeGeneric)
 	reg.RegisterDecoder(ipldswh.Swh1Snp, ipldswh.DecodeGeneric)
 	return nil
