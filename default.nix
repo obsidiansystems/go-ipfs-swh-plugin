@@ -119,9 +119,9 @@ pkgs.buildGoModule rec {
   subPackages = [ "cmd/ipfs" ];
   # ^^^ What Go packages will be built (cmd/ipfs is the IPFS CLI)
 
-  patches = [ ./preload-plugin.patch ];
-  #           ^^^^^^^^^^^^^^^^^^^^^^ Adds our plugin to the plugin
-  #           preload list.
+  patches = [ ./build/preload-plugin.patch ];
+  #           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Adds our plugin to the
+  #           plugin preload list.
 
   passthru = {
     inherit go-ipfs-swh-plugin go-modules ipfs-vendor go-ipfs-swh-plugin-vendor;

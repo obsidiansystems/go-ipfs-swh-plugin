@@ -23,7 +23,7 @@ endif
 .PHONY: install build
 
 go.mod:
-	bash ./set-target.sh $(IPFS_VERSION)
+	bash ./build/set-target.sh $(IPFS_VERSION)
 
 swhid-plugin.so: main/main.go go.mod
 	$(GOCC) build $(GOFLAGS) -buildmode=plugin -o "$@" "$<"
