@@ -2,6 +2,7 @@
   "owner": "ipfs",
   "repo": "kubo",
   "private": false,
-  "rev": "cde79df1408c3bd518fec1622d97bf4a251af81e",
-  "sha256": "1a9sylxv8ay6lvv1w3qhg29pyzk81szx3s20k00fa7k8bglwlw7j"
+  "tag": "v0.12.2",
+  "rev": "0e8b121aba103e2053f6bcfebe1a491b43694a30",
+  "sha256": "0yn5b0k8pn78w0j5cx6dd20nj367pv6h4l2f8zw5lvsrlpry644k"
 }

@@ -52,7 +52,7 @@ let
     inherit (go-ipfs-swh-plugin) pname version;
     src = builtins.filterSource filterMeta ./.;
 
-    vendorSha256 = "12lw8gvjfjv8v7m3ci1xcsm74n8qyrh2ch7k7f91hpn0sswcnf6p";
+    vendorSha256 = "18k8r8gfnm2mxpdhywbwzrhyq9nzv1b1383gb1qsrqbhg7kxg2kw";
     overrideModAttrs = old: {
       # Don't need IPFS because we will get from the other vendor.  Not
       # doing this causes a conflict.
@@ -63,11 +63,10 @@ let
   }).go-modules;
   # ^^^^^^^^^^^^ This means that we don't build this plugin twice.
 
-  # IPFS master as of 2022-02-03, 14:00 GMT-3
   ipfs-source = import ./dep/kubo/thunk.nix;
 
-  # The version that ^^^ reports itself as
-  ipfs-version = "v0.13.0";
+  # The version that ^^^ reports itself as, and "+swh"
+  ipfs-version = "v0.12.2+swh";
 
   ipfs-replacements = ''
   # Update our version of go-multicodec
@@ -81,7 +80,7 @@ let
     version = ipfs-version;
     src = ipfs-source;
 
-    vendorSha256 = "05f3f4ibsmzvlqmzv7g4xa867fsl38r03gzmidvaxq29grsjjhj2";
+    vendorSha256 = "12idmv4x83f45i25nvqf200bg2b7hv22ap35vgv3yd7b6ggxl2da";
     overrideModAttrs = old: {
       postConfigure = ipfs-replacements;
     };
