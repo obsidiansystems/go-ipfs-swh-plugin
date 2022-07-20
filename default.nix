@@ -119,6 +119,7 @@ pkgs.buildGoModule rec {
 
   passthru = {
     inherit go-ipfs-swh-plugin go-modules ipfs-vendor go-ipfs-swh-plugin-vendor;
+    repoVersion = "12";
   };
 
   postConfigure = ''

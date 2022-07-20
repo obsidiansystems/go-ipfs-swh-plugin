@@ -1,7 +1,7 @@
 let
   pkgs = import ./dep/nixpkgs {};
 
-  ipfs = import ./. { inherit pkgs; };
+  ipfs-swh = import ./. { inherit pkgs; };
 
   # CID representing the SWHID
   # https://archive.softwareheritage.org/browse/snapshot/c7c108084bc0bf3d81436bf980b46e98bd338453/directory/
@@ -17,19 +17,42 @@ let
   '';
 in
   pkgs.nixosTest {
-    system = "x86_64-linux";
-    machine = { config, pkgs, ... }: {
-      networking.firewall.enable = false;
-      networking.extraHosts = ''
-        0.0.0.0 archive.softwareheritage.org
-      '';
+    nodes = {
+      bridge = { config, pkgs, ... }: {
+        networking.extraHosts = ''
+          0.0.0.0 archive.softwareheritage.org
+        '';
 
-      environment.systemPackages = [ ipfs ];
+        services.ipfs = {
+          enable = true;
+          package = ipfs-swh;
+          emptyRepo = true;
+          #profile = "swhbridge";
+        };
+        networking.firewall.allowedTCPPorts = [ 4001 ];
+        networking.firewall.allowedUDPPorts = [ 4001 ];
+      };
+      client = { config, pkgs, ... }: {
+        services.ipfs = {
+          enable = true;
+          package = ipfs-swh;
+        };
+        networking.firewall.allowedTCPPorts = [ 4001 ];
+        networking.firewall.allowedUDPPorts = [ 4001 ];
+      };
     };
 
-    # TODO: Add bridge node (when we have a bridge)
     testScript = ''
-      machine.succeed('ipfs -L --offline init')
+      # SWH Archive servers are inaccessible from this machine
+      bridge.fail(
+        'curl https://archive.softwareheritage.org'
+      )
+
+      # Skip once we can set profile in NixOS Config.
+      dir = bridge.succeed('mktemp -d').strip()
+      # Complains some things can't be fetched, I think, but this is harmless.
+      bridge.fail(f'IPFS_PATH={dir} ipfs -L --offline init -e -p swhbridge')
+      bridge.succeed(f'grep swhbridge {dir}/config')
 
       # Skipping until we work on snapshot decoding more
       #
@@ -41,10 +64,5 @@ in
 
       # if "test error (encode)" not in output:
       #   raise ValueError("Test encoding error did not fire (plugin not loaded?)")
-
-      # SWH Archive servers are inaccessible from this machine
-      machine.fail(
-        'curl https://archive.softwareheritage.org'
-      )
     '';
   }
