@@ -11,13 +11,11 @@ diff --git a/plugin/loader/preload_list b/plugin/loader/preload_list
 index 54b8dee6fc..1540028061 100644
 --- a/plugin/loader/preload_list
 +++ b/plugin/loader/preload_list
-@@ -9,4 +9,5 @@ iplddagjose github.com/ipfs/go-ipfs/plugin/plugins/dagjose *
- badgerds github.com/ipfs/go-ipfs/plugin/plugins/badgerds *
- flatfs github.com/ipfs/go-ipfs/plugin/plugins/flatfs *
- levelds github.com/ipfs/go-ipfs/plugin/plugins/levelds *
--peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
-\ No newline at end of file
-+peerlog github.com/ipfs/go-ipfs/plugin/plugins/peerlog *
+@@ -9,4 +9,5 @@ iplddagjose github.com/ipfs/kubo/plugin/plugins/dagjose *
+ badgerds github.com/ipfs/kubo/plugin/plugins/badgerds *
+ flatfs github.com/ipfs/kubo/plugin/plugins/flatfs *
+ levelds github.com/ipfs/kubo/plugin/plugins/levelds *
+ peerlog github.com/ipfs/kubo/plugin/plugins/peerlog *
 +swh github.com/obsidiansystems/go-ipfs-swh-plugin *
 -- 
 2.34.1

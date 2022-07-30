@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/ipfs/go-ipfs/repo"
-	"github.com/ipfs/go-ipfs/repo/fsrepo"
+	"github.com/ipfs/kubo/repo"
+	"github.com/ipfs/kubo/repo/fsrepo"
 )
 
 type BridgeDatastoreConfig struct {

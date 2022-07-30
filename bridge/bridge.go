@@ -1,9 +1,9 @@
 package bridge
 
 import (
-	config "github.com/ipfs/go-ipfs-config"
-	plugin "github.com/ipfs/go-ipfs/plugin"
-	"github.com/ipfs/go-ipfs/repo/fsrepo"
+	config "github.com/ipfs/kubo/config"
+	plugin "github.com/ipfs/kubo/plugin"
+	"github.com/ipfs/kubo/repo/fsrepo"
 )
 
 type BridgePlugin struct{}

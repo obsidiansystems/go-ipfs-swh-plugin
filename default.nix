@@ -46,18 +46,20 @@ let
     '';
   };
 
+  buildGoModule = pkgs.buildGo118Module;
+
   # Use the Nixpkgs Go build support to generate a fixed-output
   # derivation of the *dependencies* of this package.
-  go-ipfs-swh-plugin-vendor = (pkgs.buildGoModule {
+  go-ipfs-swh-plugin-vendor = (buildGoModule {
     inherit (go-ipfs-swh-plugin) pname version;
     src = builtins.filterSource filterMeta ./.;
 
-    vendorSha256 = "18k8r8gfnm2mxpdhywbwzrhyq9nzv1b1383gb1qsrqbhg7kxg2kw";
+    vendorSha256 = "0xzwv8hms0d59vfiywfvgpwcb8c4dvmarn0xy2wkai83a10f7n8l";
     overrideModAttrs = old: {
       # Don't need IPFS because we will get from the other vendor.  Not
       # doing this causes a conflict.
       postInstall = ''
-         rm -r "$out/github.com/ipfs/go-ipfs"
+         rm -r "$out/github.com/ipfs/kubo"
       '';
     };
   }).go-modules;
@@ -66,24 +68,16 @@ let
   ipfs-source = import ./dep/kubo/thunk.nix;
 
   # The version that ^^^ reports itself as, and "+swh"
-  ipfs-version = "v0.12.2+swh";
-
-  ipfs-replacements = ''
-  # Update our version of go-multicodec
-  go mod edit -replace=github.com/multiformats/go-multicodec@v0.3.0=github.com/multiformats/go-multicodec@v0.4.0
-  '';
+  ipfs-version = "v0.14.0+swh";
 
   # Use the Nixpkgs Go build support to generate a fixed-output
   # derivation of the *dependencies* of the above IPFS package.
-  ipfs-vendor = (pkgs.buildGoModule {
+  ipfs-vendor = (buildGoModule {
     pname = "ipfs";
     version = ipfs-version;
     src = ipfs-source;
 
-    vendorSha256 = "12idmv4x83f45i25nvqf200bg2b7hv22ap35vgv3yd7b6ggxl2da";
-    overrideModAttrs = old: {
-      postConfigure = ipfs-replacements;
-    };
+    vendorSha256 = "1csphhzljix4mbjkz90r95a89xi5ryfbavi2r0zl82viv1h3zlqx";
   }).go-modules;
   # ^^^^^^^^^^^^ This means that we don't build IPFS twice.
 
@@ -93,7 +87,7 @@ let
     paths = [ ipfs-vendor go-ipfs-swh-plugin-vendor go-ipfs-swh-plugin ];
   };
 in
-pkgs.buildGoModule rec {
+buildGoModule rec {
   pname = "ipfs+swh";
   version = ipfs-version;
   src = ipfs-source;
@@ -128,9 +122,16 @@ pkgs.buildGoModule rec {
   bash plugin/loader/preload.sh > plugin/loader/preload.go
 
   # And copy our generated dependencies module to the vendor folder.
-  cp -r --reflink=auto ${go-modules} vendor
+  cp -r --reflink=auto --no-preserve=mode,ownership ${go-modules} vendor
 
-  ${ipfs-replacements}
+  # Symlinks break go:embed, so we replace:
+  for f in \
+    github.com/ipfs/go-graphsync/message/ipldbind/schema.ipldsch \
+    github.com/ipfs/go-graphsync/message/v1/metadata/schema.ipldsch
+  do
+    rm vendor/$f
+    cp ${go-modules}/$f vendor/$f
+  done
   '';
 
   postInstall = pkgs.ipfs.postInstall;

@@ -1,7 +1,7 @@
 package swhid
 
 import (
-	plugin "github.com/ipfs/go-ipfs/plugin"
+	plugin "github.com/ipfs/kubo/plugin"
 	logging "github.com/ipfs/go-log"
 	"github.com/ipld/go-ipld-prime/multicodec"
 	"github.com/obsidiansystems/go-ipld-swh"

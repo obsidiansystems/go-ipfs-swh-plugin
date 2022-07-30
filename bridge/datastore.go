@@ -12,7 +12,7 @@ import (
 
 	ds "github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
-	"github.com/ipfs/go-ipfs/repo"
+	"github.com/ipfs/kubo/repo"
 	logging "github.com/ipfs/go-log"
 	"github.com/multiformats/go-base32"
 	mb "github.com/multiformats/go-multibase"
