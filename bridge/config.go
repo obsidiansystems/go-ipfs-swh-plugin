@@ -8,20 +8,20 @@ import (
 	"github.com/ipfs/kubo/repo/fsrepo"
 )
 
-type BridgeDatastoreConfig struct {
+type SwhClientConfig struct {
 	base_url   *url.URL
 	auth_token *string
 }
 
-func (c *BridgeDatastoreConfig) DiskSpec() fsrepo.DiskSpec {
+func (c *SwhClientConfig) DiskSpec() fsrepo.DiskSpec {
 	return nil
 }
 
-func (cfg *BridgeDatastoreConfig) Create(string) (repo.Datastore, error) {
-	return BridgeDs{cfg}, nil
+func (cfg *SwhClientConfig) Create(string) (repo.Datastore, error) {
+	return BridgeDs{c: SwhClient{cfg}}, nil
 }
 
-func ParseConfig(params map[string]interface{}) (*BridgeDatastoreConfig, error) {
+func ParseConfig(params map[string]interface{}) (*SwhClientConfig, error) {
 	base_url_v, ok := params["base-url"]
 	base_url_s := "https://archive.softwareheritage.org"
 	if ok {
@@ -50,7 +50,7 @@ func ParseConfig(params map[string]interface{}) (*BridgeDatastoreConfig, error) 
 		auth_token = &auth_token_s
 	}
 
-	return &BridgeDatastoreConfig{
+	return &SwhClientConfig{
 		base_url,
 		auth_token,
 	}, nil
