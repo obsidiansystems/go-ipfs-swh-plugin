@@ -39,7 +39,7 @@ func (b SwhClient) customHeaderReq() http.Request {
 func (b SwhClient) findSwhidFromGit(types []string, hash string) (*string, error) {
 	// Hit the "/api/1/known" endpoint with a POST request with the set
 	// of possible SWHIDs for the given hash to find which one exists.
-	swhlog.Infof("lookup up hash: %s\n", hash)
+	swhlog.Infof("looking up hash: %s\n", hash)
 
 	// Build request headers
 	req := b.customHeaderReq()
