@@ -54,6 +54,9 @@ $ unset IPFS_PATH
 $ result/bin/ipfs init -e -p swhbridge
 ```
 
+This may show `Error: ipld: could not find QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn`,
+you can safely ignore this error.
+
 If you have an SWH authentication token, you can add it to the config
 file just created with `ipfs init`:
 
