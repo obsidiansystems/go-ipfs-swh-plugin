@@ -35,7 +35,10 @@ f01F00311149dcebebe2bb56cabdd536787886d582b762a0376
 
 ## Setting up a bridge
 
+### Get IPFS with plugin
+
 To set up a bridge, you must first have IPFS built with the plugin.
+
 This repository includes a Nix derivation to compile IPFS with the
 plugin baked in, which is the recommended deployment strategy for Go
 plugins. Simply
@@ -44,15 +47,20 @@ plugins. Simply
 $ nix-build
 ```
 
-And use the resulting `result/bin/ipfs` binary. You can then use the
-plugin's own configuration profile to set up a bridge:
+And use the resulting `result/bin/ipfs` binary.
 
+### Configure instance
+
+You can use the plugin's own configuration profile to set up a bridge with `ipfs init -e -p swhbridge`.
+
+Assuming you are using the Nix build from above, that looks like:
 ```bash
 $ unset IPFS_PATH
-#       ^^^ To avoid /var/lib/ipfs if installed globally, at least on
-#       ^^^ NixOS.
+#       ^^^ To avoid any global installation, e.g. in /var/lib/ipfs
 $ result/bin/ipfs init -e -p swhbridge
 ```
+
+### Specify a SWH auth token
 
 If you have an SWH authentication token, you can add it to the config
 file just created with `ipfs init`:
