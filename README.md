@@ -62,8 +62,13 @@ $ result/bin/ipfs init -e -p swhbridge
 
 ### Specify a SWH auth token
 
-If you have an SWH authentication token, you can add it to the config
-file just created with `ipfs init`:
+> *The bridge uses the [`/api/1/raw/`][route-doc] route which is currently unstable.
+> This means a SWH authentication token is currently required.*
+
+[route-doc]: https://docs.softwareheritage.org/devel/swh-web/uri-scheme-api.html#get--api-1-raw-(swhid)-
+
+Add your SWH authenticatiton token to the file just created with `ipfs
+init`:
 
 ``` diff
 --- a/config
