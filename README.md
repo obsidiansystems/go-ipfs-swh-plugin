@@ -1,7 +1,7 @@
 # go-ipfs-swh-plugin
 
-IPFS plugin for bridging requests to the Software Heritage API,
-implemented as a datastore.
+IPFS [plugin](https://github.com/ipfs/kubo/blob/master/docs/plugins.md) for bridging requests to the Software Heritage API,
+implemented as a [datastore](https://github.com/ipfs/kubo/blob/master/docs/plugins.md#datastore).
 
 Using the `makecid.py` script included in the repository, or by pasting
 the magic `f01781114` bytes in front of an identifier hash, you can
