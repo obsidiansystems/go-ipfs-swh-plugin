@@ -39,7 +39,7 @@ func (b SwhClient) customHeaderReq() http.Request {
 func (b SwhClient) findSwhidFromGit(types []string, hash string) (*string, error) {
 	// Hit the "/api/1/known" endpoint with a POST request with the set
 	// of possible SWHIDs for the given hash to find which one exists.
-	swhlog.Infof("looking up hash: %s\n", hash)
+	swhlog.Infof("looking up hash: %s", hash)
 
 	// Build request headers
 	req := b.customHeaderReq()
@@ -90,7 +90,7 @@ func (b SwhClient) findSwhidFromGit(types []string, hash string) (*string, error
 func (b SwhClient) fetchSwhid(swhid string) ([]byte, error) {
 	// Fetch the given hash as a blob. We hit the "content" SWH API
 	// endpoint, and use that as the contents.
-	swhlog.Infof("fetching SWHID: %s\n", swhid)
+	swhlog.Infof("fetching SWHID: %s", swhid)
 
 	// Build request headers
 	req := b.customHeaderReq()
@@ -113,7 +113,7 @@ func (b SwhClient) fetchSwhid(swhid string) ([]byte, error) {
 		return nil, err
 	}
 
-	swhlog.Infof("SWHID fetched: %s\n", swhid)
+	swhlog.Infof("SWHID fetched: %s", swhid)
 
 	return buf, nil
 }
