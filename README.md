@@ -47,7 +47,7 @@ plugins. Simply
 $ nix-build
 ```
 
-And use the resulting `result/bin/ipfs` binary.
+And use the resulting `./result/bin/ipfs` binary.
 
 ### Configure instance
 
@@ -57,7 +57,7 @@ Assuming you are using the Nix build from above, that looks like:
 ```bash
 $ unset IPFS_PATH
 #       ^^^ To avoid any global installation, e.g. in /var/lib/ipfs
-$ result/bin/ipfs init -e -p swhbridge
+$ ./result/bin/ipfs init -e -p swhbridge
 ```
 
 ### Specify a SWH auth token
@@ -92,7 +92,7 @@ reading commands:
 
 Fetch a file:
 ```bash
-$ result/bin/ipfs dag get \
+$ ./result/bin/ipfs dag get \
     --output-codec=git-raw \
        f0178111494a9ed024d3859793618152ea559a168bbcbb5e2
 #   ^^^ render in human readable text
@@ -101,21 +101,21 @@ $ result/bin/ipfs dag get \
 
 Fetch a directory (listing):
 ```bash
-$ result/bin/ipfs dag get \
+$ ./result/bin/ipfs dag get \
     f017811141ecc6062e9b02c2396a63d90dfac4d63690e488b | jq
 #   ^^^ CID corresponding to Linux's root directory
 ```
 
 Fetch a revision:
 ```bash
-$ result/bin/ipfs dag get \
+$ ./result/bin/ipfs dag get \
     f017811141a0dd0088247f9d4e403a460f0f6120184af3e15 | jq
 #   ^^^ CID corresponding to a recent GHC commit
 ```
 
 Fetch a snapshot:
 ```bash
-$ result/bin/ipfs dag get \
+$ ./result/bin/ipfs dag get \
     f01F00311149dcebebe2bb56cabdd536787886d582b762a0376 | jq
 #   ^^^ CID corresponding to a recent github.com/reflex-frp/patch
 #       snapshot
@@ -123,7 +123,7 @@ $ result/bin/ipfs dag get \
 
 Fetch recursively (!):
 ```bash
-$ result/bin/ipfs dag get \
+$ ./result/bin/ipfs dag get \
     --output-codec=git-raw \
        f017811141a0dd0088247f9d4e403a460f0f6120184af3e15/tree/compiler/hash/GHC/hash/Core/hash/Type.hs/hash
 #   ^^^ render in human readable text
