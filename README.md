@@ -3,6 +3,8 @@
 IPFS [plugin](https://github.com/ipfs/kubo/blob/master/docs/plugins.md) for bridging requests to the Software Heritage API,
 implemented as a [datastore](https://github.com/ipfs/kubo/blob/master/docs/plugins.md#datastore).
 
+> See our [blog post](https://blog.obsidian.systems/software-heritage-bridge/) introducing this for a more background.
+
 Using the `makecid.py` script included in the repository, or by pasting
 the magic `f01781114` bytes in front of an identifier hash, you can
 convert a git-like SWHID to a CID which the bridge can handle.
